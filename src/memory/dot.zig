@@ -50,9 +50,6 @@ test "should allocate a Point" {
     const point_ptr = try Point.initAlloc(std.testing.allocator, 1, 2);
     defer std.testing.allocator.destroy(point_ptr);
 
-    // Le compilateur voit que point_ptr est un pointeur, et non la structure elle-même. Comme un pointeur n'a pas de
-    // champ nommé x, Zig comprend immédiatement votre intention. Il réécrit automatiquement votre code en arrière-plan
-    // pour aller chercher la valeur pointée.
     try std.testing.expectEqualDeep(1, point_ptr.x);
 }
 
