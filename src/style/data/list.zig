@@ -64,7 +64,7 @@ test "should build map and reduce a list" {
         fn fun(list: List(u32)) u32 {
             return switch (list) {
                 .Nil => 0,
-                .Cons => |c| c.head + @This().fun(c.tail.*),
+                .Cons => |c| c.head + fun(c.tail.*),
             };
         }
     }.fun;
