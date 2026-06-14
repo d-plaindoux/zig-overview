@@ -26,6 +26,85 @@
 ]
 
 #default-slide[
+    #title[Optional]
+
+    #v(0.5cm)
+    === ```zig ?T``` pour stocker la valeur ```zig null``` ou une valeur de type ```zig T```
+
+    #v(0.5cm)
+    ```zig
+    const a : ?u32 = ...;
+
+    const value1 = a orelse ...;
+    const value2 = a orelse unreacheable; // panique si null
+    const value3 = a?;
+    ```
+]
+
+#default-slide[
+    #title[Optional]
+
+    #v(0.5cm)
+    === ```zig ?T``` pour stocker la valeur ```zig null``` ou une valeur de type ```zig T```
+
+    #v(0.5cm)
+    ```zig
+    const a : ?u32 = ...;
+
+    if (a != null) {
+       ... // Appel sûr à a.?
+    } else {
+       ...
+    }
+    ```
+]
+
+#default-slide[
+    #title[Optional]
+
+    #v(0.5cm)
+    === ```zig ?T``` pour stocker la valeur ```zig null``` ou une valeur de type ```zig T```
+
+    #v(0.5cm)
+    ```zig
+    const a : ?u32 = ...;
+
+    if (a) |value| {
+       ...
+    } else {
+       ...
+    }
+    ```
+]
+#default-slide[
+    #title[Optional]
+
+    #v(0.5cm)
+    === ```zig ?T``` pour stocker la valeur ```zig null``` ou une valeur de type ```zig T```
+
+    #v(0.5cm)
+    ```zig
+    var a : ?u32 = ...;
+
+    if (a) |*value| {
+       ...
+    } else {
+       ...
+    }
+    ```
+]
+
+#default-slide[
+    #title[Enumération]
+]
+
+#default-slide[
+    #title[Erreur]
+
+
+]
+
+#default-slide[
     #title[Fonction]
 
     #v(0.5em)
@@ -38,20 +117,34 @@
 
     == Les paramètres sont passés par valeur:
     #uncover("2-")[=== - les primitives sont copiées et]
-    #uncover(3)[=== - pour les données complexes c'est variable]
+    #uncover(3)[=== - pour les données complexes cela dépend]
 
 ]
 
 #default-slide[
-    #title[Erreur]
+    #title[Fonction]
 
+    === Possiblité de retourner des erreurs
 
+    #v(0.5em)
+    ```zig
+    fn nom(p1: t1, ..., p1: tn) !r {
+        ...
+    }
+    ```
 ]
 
 #default-slide[
-    #title[Optional]
+    #title[Fonction]
 
+    === Possiblité de retourner des erreurs connues
 
+    #v(0.5em)
+    ```zig
+    fn nom(p1: t1, ..., p1: tn) error{}!r {
+        ...
+    }
+    ```
 ]
 
 #default-slide[
@@ -113,10 +206,6 @@
 #default-slide[
     #title[Tout est expression]
 
-]
-
-#default-slide[
-    #title[Enumération]
 ]
 
 #default-slide[

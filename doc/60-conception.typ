@@ -148,18 +148,17 @@
     === Mise en pratique
 
     #v(0.5em)
-    ```zig
-    test "should create and push in stack" {
-        var heap = std.heap.DebugAllocator(.{}){};
-        defer _ = heap.deinit();
-        const allocator = heap.allocator();
+    #reveal-code(lines: (0, 3, 7, 9))[```zig
+    var heap = std.heap.DebugAllocator(.{}){};
+    defer _ = heap.deinit();
+    const allocator = heap.allocator();
 
-        const S = StackList(u32);
-        const stack = try S.push(allocator, 1, S.create());
-        defer S.deinit(allocator, stack);
-        try std.testing.expectEqual(1, Module.peek(stack));
-    }
-    ```
+    const S = StackList(u32);
+    const stack = try S.push(allocator, 1, S.create());
+    defer S.deinit(allocator, stack);
+
+    try std.testing.expectEqual(1, S.peek(stack));
+    ```]
 ]
 
 #default-slide[

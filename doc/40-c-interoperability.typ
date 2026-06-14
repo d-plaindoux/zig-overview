@@ -4,3 +4,4 @@
 #chapter-slide[
     = #box(image(zig-logo-light, height: 1em), baseline: 17%) et C
 ]
+

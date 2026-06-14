@@ -8,7 +8,6 @@
 #default-slide[
     #title[Pile ou Tas ?]
 
-
 ]
 
 #default-slide[
@@ -29,19 +28,32 @@
         ```]
 ]
 
+
 #default-slide[
-    #title[Allocation dans #alternatives(repeat-last: true)[le Tas][un Tas]]
+    #title[Allocation dans le Tas]
+
+    == Oui mais lequel ?
+
+    #uncover("2-")[=== - DebugAllocator]
+    #uncover("3-")[=== - SafeAllocator]
+    #uncover("4-")[=== - ArenaAllocator]
+    #uncover("5-")[=== - PageAllocator]
+    #uncover("6-")[=== ...]
+]
+
+#default-slide[
+    #title[Allocation dans DebugAllocator]
 
     #v(0.5em)
-    #reveal-code(lines: (0, 0, 1, 5, 7, 8))[```zig
+    #reveal-code(lines: (0, 1, 5, 7, 8))[```zig
         const std = @import("std");
 
         pub fn main() !void {
             var gpa = std.heap.DebugAllocator(.{}){};
-            deref _ = gpa.deinit();
+            defer _ = gpa.deinit();
             const allocator = gpa.allocator();
 
-            const list = try allocator.alloc(u8, 10);
+            const array = try allocator.alloc(u8, 10);
             defer allocator.free(list);
             ...
         }
@@ -63,7 +75,7 @@
         const score_ptr = try allocator.create(u32);
         allocator.destroy(score_ptr);
 
-        score_ptr.* = 999; // Use-After-Free here
+        score_ptr.* = 666; // Use-After-Free here
     }
     ```]
 ]
@@ -77,13 +89,13 @@
     ```sh
     Segmentation fault at address 0x109a20000
     use-afer-free.zig:13:5: 0x1010c10c1 in main (use-afer-free)
-        score_ptr.* = 999;
+        score_ptr.* = 666;
         ^
     ```]
 
     #uncover("3-")[=== Solutions idiomatiques :
-    - utilisation du `deref` ou
-    - mettre le pointeur à `null` (et donc changer le type).
+    - utilisation du `defer` ou
+    - typer avec un optional et mettre le pointeur à `null`.
     ]
 ]
 
@@ -148,7 +160,7 @@
     ```zig
     const std = @import("std");
 
-    fn foo(input: *const [8] u8) void {
+    fn foo(input: *const [8]u8) void {
         var buffer: [8]u8 = undefined;
         @memcpy(buffer[0..], input);
     }
@@ -165,18 +177,18 @@
     #title["Double Free"]
 
     #v(0.5em)
-    ```zig
-    const std = @import("std");
+    #reveal-code(lines: (0, 3, 6, 8))[```zig
+    var gpa = std.heap.DebugAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
 
-    pub fn main() !void {
-        var gpa = std.heap.DebugAllocator(.{}){};
-        defer _ = gpa.deinit();
-        const allocator = gpa.allocator();
+    var number = try allocator.create(i32);
+    allocator.destroy(number);
 
-        var number = try allocator.create(i32);
-        allocator.destroy(number);
+    allocator.destroy(number);
+    ```]
 
-        allocator.destroy(number);
-    }
-    ```
+    #uncover("6-")[=== Solution idiomatique :
+    - typer avec un optional et mettre le pointeur à `null`.
+    ]
 ]
