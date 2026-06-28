@@ -8,6 +8,27 @@
 #default-slide[
     #title[Pile ou Tas ?]
 
+    #sub-title[La Pile (Stack)]
+
+    Taille connue et durée de vie liée au bloc de base
+
+    #v(0.5em)
+    *Portée :* Destruction dès que l'on sort du bloc de base \
+    *Performance :* Allocation efficace mais taille limitée \
+    *Contrainte :* La taille doit être connue à la compilation
+]
+
+#default-slide[
+    #title[Pile ou Tas ?]
+
+    #sub-title[Le Tas (Heap)]
+
+    Taille dynamique ou durée de vie indépendante de la pile
+
+    #v(0.5em)
+    *Philosophie Zig :* Pas d'allocateur global caché \
+    *Passage d'allocateur :* Allocator comme paramètre \
+    *Contrainte :* Libération explicite (cf. fuite mémoire)
 ]
 
 #default-slide[
@@ -30,43 +51,61 @@
 
 
 #default-slide[
-    #title[Allocation dans le Tas]
+    #title[Allocation sur le Tas]
 
-    == Oui mais lequel ?
+    #sub-title[Oui mais lequel ?]
 
-    #uncover("2-")[=== - DebugAllocator]
-    #uncover("3-")[=== - SafeAllocator]
-    #uncover("4-")[=== - ArenaAllocator]
-    #uncover("5-")[=== - PageAllocator]
-    #uncover("6-")[=== ...]
+    #uncover("2-")[=== #h(1cm) - DebugAllocator]
+    #uncover("3-")[=== #h(1cm) - SafeAllocator]
+    #uncover("4-")[=== #h(1cm) - ArenaAllocator]
+    #uncover("5-")[=== #h(1cm) - PageAllocator]
+    #uncover("6-")[=== #h(1cm) ...]
 ]
 
 #default-slide[
-    #title[Allocation dans DebugAllocator]
+    #title[Allocation]
 
     #v(0.5em)
-    #reveal-code(lines: (0, 1, 5, 7, 8))[```zig
-        const std = @import("std");
-
+    #reveal-code(lines: (0, 1, 6, 8))[```zig
         pub fn main() !void {
-            var gpa = std.heap.DebugAllocator(.{}){};
-            defer _ = gpa.deinit();
-            const allocator = gpa.allocator();
-
+            var heap = std.heap.DebugAllocator(.{}){};
+            defer _ = heap.deinit();
+            const allocator = heap.allocator();
             const array = try allocator.alloc(u8, 10);
-            defer allocator.free(list);
+            defer allocator.free(array);
             ...
         }
         ```]
 ]
 
 #default-slide[
+    #title[Fuite mémoire]
+
+    #v(0.5em)
+    ```zig
+    pub fn main() !void {
+        var heap = std.heap.DebugAllocator(.{}){};
+        defer _ = heap.deinit();
+        const allocator = heap.allocator();
+        const array = try allocator.alloc(u8, 10);
+        ...
+    }
+    ```
+
+    #compiler-message[
+    ```
+    error(DebugAllocator): memory address 0x10caa0000 leaked:
+        const array = try allocator.alloc(u8, 10);
+                                         ^
+    ```
+    ]
+]
+
+#default-slide[
     #title["Use-After-Free"]
 
     #v(0.5em)
-    #reveal-code(lines: (0, 5, 6, 8, 9, 11))[```zig
-    const std = @import("std");
-
+    #reveal-code(lines: (0, 5, 6, 8, 9))[```zig
     test "Use after free" {
         var heap = std.heap.DebugAllocator(.{}){};
         defer _ = heap.deinit();
@@ -83,46 +122,27 @@
 #default-slide[
     #title["Use-After-Free" ]
 
-    #v(0.5em)
-
     #uncover("2-")[=== Execution avec le `DebugAllocator` :
     ```sh
     Segmentation fault at address 0x109a20000
-    use-afer-free.zig:13:5: 0x1010c10c1 in main (use-afer-free)
+    use-after-free.zig:13:5: 0x1010c10c1 in main
         score_ptr.* = 666;
         ^
     ```]
 
     #uncover("3-")[=== Solutions idiomatiques :
     - utilisation du `defer` ou
-    - typer avec un optional et mettre le pointeur à `null`.
+    - typer avec un optionel et mettre le pointeur à `null`.
     ]
 ]
 
 #default-slide[
     #title["Stack Buffer Overflow"]
 
-    #v(0.5em)
-    ```c
-    #include <string.h>
-
-    void foo(char* bar) {
-        char c[12];
-        strcpy(c, bar); // pas de vérification
-    }
-    ```
-    #v(0.5em)
-
-    === Ecriture à une adresse mémoire de la pile d'appel située en dehors de la structure de données prévue
-]
-
-#default-slide[
-    #title["Stack Buffer Overflow"]
+    #sub-title[Ecriture en dehors de la structure prévue]
 
     #v(0.5em)
     ```zig
-    const std = @import("std");
-
     fn foo(input: []const u8) void {
         var buffer: [8]u8 = undefined;
         @memcpy(buffer[0..], input);
@@ -137,7 +157,6 @@
 #default-slide[
     #title["Stack Buffer Overflow"]
 
-    #v(0.5em)
     === Execution interrompue :
     ```sh
     thread 1332888 panic: ... arguments have non-equal lengths
@@ -158,8 +177,6 @@
 
     #v(0.5em)
     ```zig
-    const std = @import("std");
-
     fn foo(input: *const [8]u8) void {
         var buffer: [8]u8 = undefined;
         @memcpy(buffer[0..], input);
@@ -178,9 +195,9 @@
 
     #v(0.5em)
     #reveal-code(lines: (0, 3, 6, 8))[```zig
-    var gpa = std.heap.DebugAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    var heap = std.heap.DebugAllocator(.{}){};
+    defer _ = heap.deinit();
+    const allocator = heap.allocator();
 
     var number = try allocator.create(i32);
     allocator.destroy(number);
@@ -189,6 +206,6 @@
     ```]
 
     #uncover("6-")[=== Solution idiomatique :
-    - typer avec un optional et mettre le pointeur à `null`.
+    - utilisation du `defer` ou typer avec un optionel.
     ]
 ]

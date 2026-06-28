@@ -2,13 +2,21 @@
 #import "style.typ": *
 
 #chapter-slide[
-    = Pourquoi choisir #box(image(zig-logo-light, height: 1em), baseline: 17%) ?
+    = Conclusion
 ]
 
-#chapter-slide[
-    = Ecosystème #box(image(zig-logo-light, height: 1em), baseline: 17%)
-]
+#default-slide[
+    #title[Pourquoi choisir #box(image(zig-logo-dark, height: 1em), baseline: 17%) ?]
 
-#chapter-slide[
-    = Conclusion et Perspectives
+    === Zig se positionne comme un "C robuste"
+
+    === Interopérabilité "triviale" avec le C
+
+    === Pas de flux de contrôle caché
+
+    === Maîtrise totale de la mémoire et du matériel
+
+    === Puissance de Comptime vs. Préprocesseur
+
+    === Outillage moderne
 ]

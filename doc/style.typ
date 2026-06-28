@@ -4,16 +4,24 @@
 #let zig-logo-light = "assets/zig-logo-light.svg"
 
 #let title(body) = {
-    text(size: 28pt, fill: orange.darken(20%), font: "Rockwell")[= #body]
+    text(size: 28pt, fill: orange.darken(20%), font: "Rockwell")[
+        = #body
+    ]
+}
+
+#let sub-title(body) = {
+    [
+        == #body
+        #v(0.5em)
+    ]
 }
 
 #let small-text(body) = {
     text(size: 18pt, font: "Rockwell")[#body]
 }
 
-
 #let compiler-message(body) = {
-    text(size: 22pt, fill: orange, font: "Rockwell")[#body]
+    text(size: 22pt, fill: orange.darken(20%), font: "Rockwell")[#body]
 }
 
 #let title-slide(body) = {
@@ -21,26 +29,21 @@
         paper: "presentation-16-9",
         margin: (
             top: 2cm,
-            bottom: 2cm,
             left: 2cm,
-            right: 2cm,
         ),
-        fill: blue.lighten(90%),
-        footer: align(
-            right,
-            toolbox.full-width-block(
-                inset: (
-                    top: 0pt,
-                    bottom: 0pt,
-                    left: 0pt,
-                    right: -3.9cm,
-                ),
-            )[ #image("assets/sunny-tech.svg", width: 5%) ],
-        ),
+        fill: blue.lighten(75%),
     )
     set text(size: 25pt, fill: black, font: "Rockwell")
 
-    slide[#body]
+    slide[
+        #body
+
+        #place(bottom + right,
+          dx: 2cm,
+          dy: 2cm,
+          image("assets/sunny-tech.svg", width: 15%)
+        )
+    ]
 }
 
 #let default-slide(body) = {
@@ -48,27 +51,20 @@
         paper: "presentation-16-9",
         margin: (
             top: 1cm,
-            bottom: 2cm,
             left: 2cm,
-            right: 2cm,
         ),
-        fill: blue.lighten(90%),
-        footer: align(
-            right,
-            toolbox.full-width-block(
-                inset: (
-                    top: 0pt,
-                    bottom: 0pt,
-                    left: 0pt,
-                    right: -4cm,
-                ),
-            )[ #image("assets/sunny-tech.svg", width: 5%) ],
-        ),
+        fill: blue.lighten(75%),
     )
     set text(size: 25pt, fill: black, font: "Rockwell")
 
     slide[
         #body
+
+        #place(bottom + right,
+          dx: 2cm,
+          dy: 2cm,
+          image("assets/sunny-tech.svg", width: 10%)
+        )
     ]
 }
 
@@ -94,7 +90,7 @@
             )[ #image("assets/zero.svg", width: 10%) ],
         ),
     )
-    set text(size: 25pt, fill: white, font: "Rockwell")
+    set text(size: 28pt, fill: white, font: "Rockwell")
 
     slide[
         #set align(horizon)

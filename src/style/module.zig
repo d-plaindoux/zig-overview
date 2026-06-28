@@ -1,97 +1,127 @@
-//
-// Module programming style
-//
-
 const std = @import("std");
+
 const List = @import("./data/list.zig").List;
 const Pair = @import("./data/pair.zig").Pair;
 
 //
-// Specification
+// Compile time specification verification
 //
 
-fn Stack(comptime T: fn (type) type, comptime A: type) type {
+fn implement(comptime Spec: type) type {
     return struct {
-        create: *const fn () T(A),
-        push: *const fn (std.mem.Allocator, A, T(A)) anyerror!T(A),
-        peek: *const fn (T(A)) ?A,
-        pop: *const fn (std.mem.Allocator, T(A)) Pair(?A, T(A)),
+        fn checkTypeOf(comptime Signature: type, comptime Impl: type) void {
+            const sig_info = @typeInfo(Signature).@"struct";
 
-        fn @"S.peek(S.create()) = null"(S: @This()) !void {
-            const stack = S.create();
+            inline for (sig_info.fields) |field| {
+                if (!@hasDecl(Impl, field.name)) {
+                    @compileError("Erreur de signature : la fonction '" ++ field.name ++ "' est manquante dans " ++ @typeName(Impl));
+                }
 
-            try std.testing.expectEqual(null, S.peek(stack));
+                const actual_type = @TypeOf(@field(Impl, field.name));
+                if (actual_type != field.type) {
+                    @compileError("Erreur de signature pour '" ++ field.name ++ "' dans " ++ @typeName(Impl) ++ ".\n" ++
+                        "  Attendu : " ++ @typeName(field.type) ++ "\n" ++
+                        "  Obtenu  : " ++ @typeName(actual_type));
+                }
+            }
         }
 
-        fn @"S.peek(S.push(a, S.create())) = a"(
-            S: @This(),
-            allocator: std.mem.Allocator,
-            a: A,
-        ) !void {
-            const stack = try S.push(allocator, a, S.create());
-            defer @TypeOf(stack).deinit(allocator, stack);
+        fn using(comptime Impl: type) Spec {
+            // checkTypeOf(Spec, Impl);
 
-            try std.testing.expectEqual(a, S.peek(stack));
-        }
+            var result: Spec = undefined;
 
-        fn @"S.peek(S.pop(S.push(a, S.create())).snd()) = null"(
-            S: @This(),
-            allocator: std.mem.Allocator,
-            a: A,
-        ) !void {
-            const stack = S.pop(allocator, try S.push(allocator, a, S.create())).snd();
-            defer @TypeOf(stack).deinit(allocator, stack);
+            const target_info = @typeInfo(Spec).@"struct";
+            inline for (target_info.fields) |field| {
+                @field(result, field.name) = @field(Impl, field.name);
+            }
 
-            try std.testing.expectEqual(null, S.peek(stack));
-        }
-
-        fn checkInvariants(
-            S: @This(),
-            allocator: std.mem.Allocator,
-            a: A,
-        ) !void {
-            try S.@"S.peek(S.create()) = null"();
-            try S.@"S.peek(S.push(a, S.create())) = a"(allocator, a);
-            try S.@"S.peek(S.pop(S.push(a, S.create())).snd()) = null"(allocator, a);
+            return result;
         }
     };
 }
 
 //
-// Incarnation
+// Stack specification
 //
 
-fn StackList(comptime A: type) Stack(List, A) {
-    return .{
-        .create = struct {
-            fn fun() List(A) {
-                return .nil();
-            }
-        }.fun,
-        .push = struct {
-            fn fun(allocator: std.mem.Allocator, a: A, l: List(A)) anyerror!List(A) {
-                return try .cons(allocator, a, l);
-            }
-        }.fun,
-        .peek = struct {
-            fn fun(l: List(A)) ?A {
-                return switch (l) {
-                    .Nil => null,
-                    .Cons => |c| c.head,
-                };
-            }
-        }.fun,
-        .pop = struct {
-            fn fun(allocator: std.mem.Allocator, l: List(A)) Pair(?A, List(A)) {
-                return switch (l) {
-                    .Nil => .init(null, .Nil),
-                    .Cons => |c| {
-                        defer allocator.destroy(c.tail);
-                        return .init(c.head, c.tail.*);
-                    },
-                };
-            }
-        }.fun,
+fn Stack(comptime T: fn (type) type, comptime A: type) type {
+    return struct {
+        create: fn () callconv(.@"inline") T(A),
+        push: fn (std.mem.Allocator, A, T(A)) anyerror!T(A),
+        peek: fn (T(A)) ?A,
+        pop: fn (std.mem.Allocator, T(A)) Pair(?A, T(A)),
+
+        //
+        // Invariants
+        //
+
+        fn @"S.peek(S.create()) = null"(Impl: @This()) !void {
+            const stack = Impl.create();
+
+            try std.testing.expectEqual(null, Impl.peek(stack));
+        }
+
+        fn @"S.peek(S.push(a, S.create())) = a"(
+            Impl: @This(),
+            allocator: std.mem.Allocator,
+            a: A,
+        ) !void {
+            const stack = try Impl.push(allocator, a, Impl.create());
+            defer @TypeOf(stack).deinit(allocator, stack);
+
+            try std.testing.expectEqual(a, Impl.peek(stack));
+        }
+
+        fn @"S.peek(S.pop(S.push(a, S.create())).snd()) = null"(
+            Impl: @This(),
+            allocator: std.mem.Allocator,
+            a: A,
+        ) !void {
+            const stack = Impl.pop(allocator, try Impl.push(allocator, a, Impl.create())).snd();
+            defer @TypeOf(stack).deinit(allocator, stack);
+
+            try std.testing.expectEqual(null, Impl.peek(stack));
+        }
+
+        fn checkInvariants(
+            Impl: @This(),
+            allocator: std.mem.Allocator,
+            a: A,
+        ) !void {
+            try Impl.@"S.peek(S.create()) = null"();
+            try Impl.@"S.peek(S.push(a, S.create())) = a"(allocator, a);
+            try Impl.@"S.peek(S.pop(S.push(a, S.create())).snd()) = null"(allocator, a);
+        }
+    };
+}
+
+fn StackList(comptime A: type) type {
+    return struct {
+        inline fn create() List(A) {
+            return .nil();
+        }
+
+        fn push(allocator: std.mem.Allocator, a: A, l: List(A)) anyerror!List(A) {
+            return try .cons(allocator, a, l);
+        }
+
+        fn peek(l: List(A)) ?A {
+            return switch (l) {
+                .Nil => null,
+                .Cons => |c| c.head,
+            };
+        }
+
+        fn pop(allocator: std.mem.Allocator, l: List(A)) Pair(?A, List(A)) {
+            return switch (l) {
+                .Nil => .init(null, .Nil),
+                .Cons => |c| {
+                    defer allocator.destroy(c.tail);
+                    return .init(c.head, c.tail.*);
+                },
+            };
+        }
     };
 }
 
@@ -100,7 +130,8 @@ test "should check Stack invariants for StackList incarnation" {
     defer _ = heap.deinit();
     const allocator = heap.allocator();
 
-    const Module = StackList(u32);
+    const Impl = StackList(u32);
+    const Module = implement(Stack(List, u32)).using(Impl);
 
     try Module.checkInvariants(allocator, 1);
 }

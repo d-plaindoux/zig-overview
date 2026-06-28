@@ -1,6 +1,6 @@
 #import "@preview/polylux:0.4.0": *
 #import "style.typ": *
-#import emoji : *
+#import emoji: *
 
 #chapter-slide[
     = Survol du langage #box(image(zig-logo-light, height: 1em), baseline: 17%)
@@ -11,48 +11,63 @@
 
     #uncover("2-")[== Nombres (entier et flottant)
 
-    i8, u8, i16, u16, i32, u32, i64, u64, isize, usize
+        i8, u8, i16, u16, i32, u32, i64, u64, isize, usize
 
-    f16, f32, f64, f80, f128
+        f16, f32, f64, f80, f128
     ]
     #uncover("3-")[== Compatibilité ABI avec C
 
-    c_char, c_short, c_ushort, c_int, c_uint, c_long etc.
+        c_char, c_short, c_ushort, c_int, c_uint, c_long etc.
     ]
     #uncover("4-")[== Autres ...
 
-    bool, void, anyopaque, noreturn, type, anyerror ...
+        bool, void, anyopaque, noreturn, type, anytype, anyerror
     ]
 ]
 
 #default-slide[
-    #title[Optional]
+    #title[Fonction]
 
-    #v(0.5cm)
-    === ```zig ?T``` pour stocker la valeur ```zig null``` ou une valeur de type ```zig T```
+    #v(0.5em)
+    ```zig
+    fn nom(p1: t1, ..., p1: tn) r {
+        ...
+    }
+    ```
+    #v(0.5em)
+
+    #sub-title[Les paramètres sont passés par valeur]
+    #uncover("2-")[=== #h(1em) les primitives sont copiées et ]
+    #uncover(3)[=== #h(1em) pour les données composites cela dépend]
+
+]
+
+#default-slide[
+    #title[Optionel ```zig ?T```]
+
+    #sub-title[Soit la valeur ```zig null``` soit une valeur de type ```zig T```]
 
     #v(0.5cm)
     ```zig
     const a : ?u32 = ...;
 
     const value1 = a orelse ...;
-    const value2 = a orelse unreacheable; // panique si null
-    const value3 = a?;
+    const value2 = a orelse unreacheable; // panique si [null]
+    const value3 = a.?; // équivalent à [a orelse unreacheable]
     ```
 ]
 
 #default-slide[
-    #title[Optional]
+    #title[Optionel ```zig ?T```]
 
-    #v(0.5cm)
-    === ```zig ?T``` pour stocker la valeur ```zig null``` ou une valeur de type ```zig T```
+    #sub-title[Soit la valeur ```zig null``` soit une valeur de type ```zig T```: ```zig ?T```]
 
     #v(0.5cm)
     ```zig
     const a : ?u32 = ...;
 
     if (a != null) {
-       ... // Appel sûr à a.?
+       ... // L'appel à [a.?] est sécurisé
     } else {
        ...
     }
@@ -60,10 +75,9 @@
 ]
 
 #default-slide[
-    #title[Optional]
+    #title[Optionel ```zig ?T```]
 
-    #v(0.5cm)
-    === ```zig ?T``` pour stocker la valeur ```zig null``` ou une valeur de type ```zig T```
+    #sub-title[Soit la valeur ```zig null``` soit une valeur de type ```zig T```: ```zig ?T```]
 
     #v(0.5cm)
     ```zig
@@ -77,10 +91,9 @@
     ```
 ]
 #default-slide[
-    #title[Optional]
+    #title[Optionel ```zig ?T```]
 
-    #v(0.5cm)
-    === ```zig ?T``` pour stocker la valeur ```zig null``` ou une valeur de type ```zig T```
+    #sub-title[Soit la valeur ```zig null``` soit une valeur de type ```zig T```: ```zig ?T```]
 
     #v(0.5cm)
     ```zig
@@ -96,140 +109,238 @@
 
 #default-slide[
     #title[Enumération]
+
+    #sub-title[Ensemble restreint de valeurs nommées]
+
+    #v(0.5cm)
+    ```zig
+    const Couleur = enum { rouge, noir };
+    const Enseigne = enum { pique, trefle, carreau, coeur };
+    ```
+]
+
+#default-slide[
+    #title[Enumération]
+
+    #sub-title[Traitement par filtrage exhaustif]
+
+    #v(0.5cm)
+    ```zig
+    const Couleur = enum { rouge, noir };
+    const Enseigne = enum { pique, trefle, carreau, coeur };
+
+    fn couleur(e: Enseigne) Couleur {
+        return switch (e) {
+            .pique, .trefle => .noir,
+            .carreau, .coeur => .rouge,
+        };
+    }
+    ```
+]
+
+#default-slide[
+    #title[Enumération]
+
+    #sub-title[Colocaliser représentation et comportements]
+
+    #v(0.5cm)
+    ```zig
+    const Couleur = enum { rouge, noir };
+    const Enseigne = enum {
+        pique, trefle, carreau, coeur,
+
+        fn couleur(e: Enseigne) Couleur {
+            ...
+        }
+    };
+    // Enseigne.couleur(.pique) ou Enseigne.pique.couleur()
+    ```
+]
+
+#default-slide[
+    #title[Enumération]
+
+    #sub-title[Typage et référence au type courant]
+
+    #v(0.5cm)
+    ```zig
+    const Couleur = enum { rouge, noir };
+    const Enseigne = enum {
+        pique, trefle, carreau, coeur,
+
+        fn couleur(e: @This()) Couleur {
+            ...
+        }
+    };
+    // Enseigne.couleur(.pique) ou Enseigne.pique.couleur()
+    ```
+
 ]
 
 #default-slide[
     #title[Erreur]
 
+    #sub-title[Enumérations spécifiques dédiées aux erreurs]
 
-]
-
-#default-slide[
-    #title[Fonction]
-
-    #v(0.5em)
+    #v(0.5cm)
     ```zig
-    fn nom(p1: t1, ..., p1: tn) r {
-        ...
-    }
+    const A = error{ NotDir, PathNotFound };
+    const B = error{ OutOfMemory, PathNotFound };
+    const C = A || B;
+    // C = error{ OutOfMemory, NotDir, PathNotFound }
     ```
-    #v(0.5em)
 
-    == Les paramètres sont passés par valeur:
-    #uncover("2-")[=== - les primitives sont copiées et]
-    #uncover(3)[=== - pour les données complexes cela dépend]
-
+    #sub-title[Pas de notion d'exceptions !]
 ]
 
 #default-slide[
-    #title[Fonction]
+    #title[Erreur]
 
-    === Possiblité de retourner des erreurs
+    #sub-title[Traitement des erreurs]
 
-    #v(0.5em)
+    #v(0.5cm)
     ```zig
-    fn nom(p1: t1, ..., p1: tn) !r {
-        ...
-    }
+    const r = operation catch comportement_en_cas_d_erreur;
+
+    const r = operation catch |e| comportement_en_cas_d_erreur;
+
+    const r = operation catch |e| return e;
+
+    const r = try operation; // Sucre syntaxique
     ```
 ]
 
 #default-slide[
     #title[Fonction]
 
-    === Possiblité de retourner des erreurs connues
+    #sub-title[Retourner des erreurs]
 
-    #v(0.5em)
     ```zig
-    fn nom(p1: t1, ..., p1: tn) error{}!r {
+    fn nom(p1: t1, ..., p1: tn) !r { // inférence
         ...
     }
     ```
+    ```zig
+    fn nom(p1: t1, ..., p1: tn) A!r {
+        ...
+    }
+    ```
+    ```zig
+    fn nom(p1: t1, ..., p1: tn) error{OutOfMemory}!r {
+        ...
+    }
+    ```
+]
+
+#default-slide[
+    #title[Fonction]
+
+    #sub-title[Retourner des erreurs]
+
+    ```zig
+    const MathError = error{DivideByZero};
+
+    fn divide(a: f64, b: f64) MathError!f64 {
+        if (b == 0) {
+            return MathError.DivideByZero;
+        }
+
+        return a / b;
+    }
+    ```
+]
+
+
+#default-slide[
+    #title[Erreur et diagnostique]
+
+    #sub-title[Type énuméré donc sans valeurs]
+
+    #sub-title[Approches possibles:]
+    === #h(1cm) - Remplacer ```zig E!R``` par un type algébrique comme ```zig Result```
+    === #h(1cm) - Avoir un paramètre en écriture pour le diagnostique
 ]
 
 #default-slide[
     #title[Tableaux]
 
+    === Tableau statique
     ```zig
-    const hello : [5]u8 = [_]u8{ 'h', 'e', 'l', 'l', 'o' };
+    const hello: [5]u8 = [_]u8{ 'h', 'e', 'l', 'l', 'o' };
+    ```
+    === Sous Tableau ou "Slice"
+    ```zig
+    const he: []const u8 = hello[0..2];
+    ```
+    === Tableau dynamique avec ```zig std.ArrayList```
+
+    === Vecteur (support SIMD)
+    ```zig
+    const v1: @Vector(4, f32) = .{ 1.0, 2.0, 3.0, 4.0 };
     ```
 
 ]
 
 #default-slide[
     #title[Contrôle]
-
-    == If conditional selection
-
-    ```zig
-    if (condition) true_branch [else false_branch]
-    ```
-]
-
-#default-slide[
-    #title[Contrôle]
-
-    == For loop
 
     #v(0.5em)
-    ```zig
-    const items = [_]i32{ 4, 5, 3, 4, 0 };
+
+    #reveal-code(lines:(0, 1, 3, 5 ,7 ,9, 11))[```zig
+    if (condition) true_branch [else false_branch]
 
     for(items) |item| { ... }
 
     for(items) |item, index| { ... }
 
-    for(items,items) |item1, item2| { ... }
-
-    for(items) |item| { ... } else { ... }
-    ```
-]
-
-#default-slide[
-    #title[Contrôle]
-
-    == While loop
-
-    #v(0.5em)
-    ```zig
-    var i : usize = 0;
+    for(items1,items2) |item1, item2| { ... }
 
     while(i < 10) { ... }
 
-    while (i < 10) : (i += 1) {}
-
-    while (eventuallyNullSequence()) |value| { ... }
-
-
-    ```
+    while (i < 10) : (i += 1) { ... }
+    ```]
 ]
 #default-slide[
     #title[Tout est expression]
 
+    #v(0.5em)
+
+    ```zig
+    _ = if (condition) 1 else 2;
+
+    _ = for (5..10) |i| i else @"return": {
+        break :@"return" 10;
+    };
+
+    var i = 0;
+    _ = while (i < 10) : (i += 1) {} else @"return": {
+        break :@"return" 10;
+    };
+    ```
 ]
 
 #default-slide[
     #title[Structure]
 
-    == Type produit hérité du langage C
+    #sub-title[Type produit hérité du langage C]
 
     #v(0.5em)
     #reveal-code(lines: (0, 4, 8))[```zig
-    const Point = struct {
-        x: i32,
-        y: i32,
-    };
+        const Point = struct {
+            x: i32,
+            y: i32,
+        };
 
-    fn init(x: i32, y: i32) Point {
-        return Point { .x = x, .y = y};
-    }
-    ```]
+        fn init(x: i32, y: i32) Point {
+            return Point { .x = x, .y = y};
+        }
+        ```]
 ]
 
 #default-slide[
     #title[Structure]
 
-    == Type produit hérité du langage C
+    #sub-title[Type produit hérité du langage C]
 
     #v(0.5em)
     ```zig
@@ -247,7 +358,7 @@
 #default-slide[
     #title[Structure]
 
-    == Colocaliser représentation et comportements
+    #sub-title[Colocaliser représentation et comportements]
 
     #v(0.5em)
     ```zig
@@ -265,7 +376,7 @@
 #default-slide[
     #title[Structure]
 
-    == Typage et référence au type courant
+    #sub-title[Typage et référence au type courant]
 
     #v(0.5em)
     ```zig
@@ -286,7 +397,7 @@
     #uncover("2-")[== Tout fichier source est une Structure]
 
     #v(0.5em)
-    #reveal-code(lines: (0, 0, 1, 4, 8))[```zig
+    #reveal-code(lines: (0, 0, 2, 6))[```zig
     x: i32,
     y: i32,
 
@@ -294,13 +405,27 @@
         return .{ .x = x, .y = y};
     }
     ```]
+]
 
+#default-slide[
+    #title[Structure]
+
+    #sub-title[Tout fichier source est une Structure]
+
+    ```zig
+    x: i32,
+    y: i32,
+
+    fn init(x: i32, y: i32) @This() {
+        return @This(){ .x = x, .y = y};
+    }
+    ```
 ]
 
 #default-slide[
     #title[Union]
 
-    == Type somme hérité du langage C
+    #sub-title[Type somme hérité du langage C]
 
     #v(0.5em)
     ```zig
@@ -317,7 +442,7 @@
 #default-slide[
     #title[Union]
 
-    == Accès sécurisé à la compilation
+    #sub-title[Accès sécurisé à la compilation]
 
     #v(0.5em)
     ```zig
@@ -337,7 +462,7 @@
 #default-slide[
     #title[Union]
 
-    == Accès sécurisé à l'exécution
+    #sub-title[Accès sécurisé à l'exécution]
 
     #v(0.5em)
     ```zig
@@ -347,7 +472,7 @@
         return n.integer;
     }
     ```
-    #v(2em)
+    #v(1.5em)
 
     #compiler-message[panic: access of union field 'integer' while field 'float' is active]
 ]
@@ -357,16 +482,15 @@
     #title[Union Étiquetée]
 
     #uncover("2-")[== Inspirée des langages fonctionnels]
-
-    #uncover("3-")[=== - Etiquetage Implicite]
-    #uncover("4-")[=== - Etiquetage Explicite]
-    #uncover("5-")[=== - Introduction du Filtrage de Motif]
+    #uncover("3-")[=== #h(1cm) - Etiquetage Implicite]
+    #uncover("4-")[=== #h(1cm) - Etiquetage Explicite]
+    #uncover("5-")[=== #h(1cm) - Filtrage de Motif]
 ]
 
 #default-slide[
     #title[Union]
 
-    == Étiquetage implicite
+    #sub-title[Étiquetage implicite]
 
     #v(0.5em)
     ```zig
@@ -385,7 +509,7 @@
 #default-slide[
     #title[Union]
 
-    == Étiquetage explicite
+    #sub-title[Étiquetage explicite]
 
     #v(0.5em)
     ```zig
@@ -403,7 +527,7 @@
 #default-slide[
     #title[Union]
 
-    == Introduction du Filtrage de Motif
+    #sub-title[Cas du Filtrage de Motif]
 
     #v(0.5em)
     ```zig
@@ -421,7 +545,7 @@
 #default-slide[
     #title[Union]
 
-    == Colocaliser représentation et comportements
+    #sub-title[Colocaliser représentation et comportements]
 
     #v(0.5em)
     ```zig
@@ -439,7 +563,7 @@
 #default-slide[
     #title[Union]
 
-    == Typage et référence au type courant
+    #sub-title[Typage et référence au type courant]
 
     #v(0.5em)
     ```zig
@@ -447,7 +571,7 @@
         entier: i64,
         flottant: f64,
 
-        fn increment(self:  @This) @This {
+        fn increment(self: @This()) @This() {
             return ...
         }
     };
@@ -457,7 +581,7 @@
 #default-slide[
     #title[Union]
 
-    == Cas des types récursifs
+    #sub-title[Cas des types récursifs]
 
     #v(0.5em)
     ```zig
@@ -469,51 +593,33 @@
     #v(0.5em)
 
     #compiler-message[
-    ```
-    error: type 'Naturel' depends on itself for field declared here
-        Succ: Naturel,
-              ^~~~~~~
-    ```
+        ```
+        error: type 'Naturel' depends on itself for field declared here
+            Succ: Naturel,
+                  ^~~~~~~
+        ```
     ]
-    #v(0.5em)
 
-    Il faut passer par les pointeurs ... comme en Rust !
+    Il faut passer par les pointeurs.
 ]
 
 #default-slide[
     #show link: underline
-    #title[Pointeur #uncover("3-")[et opération implicite]]
+    #title[Pointeur]
 
-    #v(0.5em)
+    *Définition de type :* ```zig *T``` ne peut jamais être nul
+
+    *Syntaxe :* ```zig &``` pour l'adresse et ```zig .*``` pour déréférencer
+
+    *Implicite :* ```zig .*``` optionel lors d'accès (fonction ou champ)
+
+    *Arithmétique indirecte :* par coercion de type
+
     ```zig
-    fn zero() u32 {
-        return 0;
-    }
+    var x: i32 = 1234;
+    const ptr = &x;
 
+    ptr.* = 5678;  // Modification de la valeur
+    ptr += 1;      // Erreur de compilation
     ```
-    #only(2)[```zig
-        export fn main() void {
-            _ = (&zero).*();
-
-        }
-        ```]
-    #only("3")[```zig
-        export fn main() void {
-            _ = (&zero).*();
-            //         ^^ peut être omis (parfois)
-        }
-        ```]
-    #only("4")[```zig
-        export fn main() void {
-            _ = (&zero)();
-
-        }
-        ```]
-    #v(0.5em)
-
-    #uncover(4)[
-        #link("https://zig.godbolt.org/#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:zig,selection:(endColumn:6,endLineNumber:9,positionColumn:6,positionLineNumber:9,selectionStartColumn:6,selectionStartLineNumber:9,startColumn:6,startLineNumber:9),source:'++++fn+zero()+u32+%7B%0A++++++++return+0%3B%0A++++%7D%0A%0A++++export+fn+main()+void+%7B%0A++++++++_+%3D+(%26zero).*()%3B%0A++++++++_+%3D+(%26zero)()%3B%0A++++++++return%3B%0A++++%7D'),l:'5',n:'0',o:'Zig+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:ztrunk,filters:(b:'0',binary: '1',binaryObject:'1',commentOnly: '0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'0',libraryCode:'0',trim:'1',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:zig,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+zig+trunk+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4")[
-            Que donne le code assembleur ?
-        ]
-    ]
 ]

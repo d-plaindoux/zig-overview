@@ -1,26 +1,24 @@
 const std = @import("std");
 
 const Point = struct {
-    const Self = @This();
-
     x: u32,
     y: u32,
 
-    fn initAlloc(allocator: std.mem.Allocator, x: u32, y: u32) !*Self {
-        const p_ptr = try allocator.create(Self);
+    fn initAlloc(allocator: std.mem.Allocator, x: u32, y: u32) !*@This() {
+        const p_ptr = try allocator.create(@This());
         p_ptr.* = init(x, y);
         return p_ptr;
     }
 
-    fn init(x: u32, y: u32) Self {
-        return .{
+    fn init(x: u32, y: u32) @This() {
+        return @This(){
             .x = x,
             .y = y,
         };
     }
 
-    fn move(self: Self, dx: u32, dy: u32) Self {
-        return .{
+    fn move(self: @This(), dx: u32, dy: u32) @This() {
+        return @This(){
             .x = self.x + dx,
             .y = self.x + dy,
         };
