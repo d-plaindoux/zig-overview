@@ -39,9 +39,14 @@
     #set align(horizon)
     #text(40pt)[= C’est qui ce #box(image(zig-logo-dark, height:1.2em), baseline: 18%) ?]
 
-    #v(2em)
-
-    #small-text[
-        #box(image("assets/mastodon.svg", height: 2em), baseline: 35%)
-    ]
+    #set align(center)
+    #box([
+        #image("assets/git-repo.png", height: 8em)
+        ==== Dépôt
+    ])
+    #h(3em)
+    #box([
+        #image("assets/feedback.png", height: 8em)
+        ==== Feedback
+    ])
 ]
