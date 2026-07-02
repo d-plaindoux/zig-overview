@@ -16,23 +16,29 @@
         C'est qui ce gonze ?
     ]
 
-    Système Distribué et modèle Acteur
-    (#link("https://www.kaptngo.com")[Akawan Kaptngo])
+    === Système Distribué et modèle Acteur (#link("https://www.kaptngo.com")[Akawan Kaptngo])
 
     #v(0.5em)
 
-    Système Expert en Prolog
-    (#link("https://app.credifix.com")[Crédifix])
+    === Système Expert en Prolog (#link("https://app.credifix.com")[Crédifix])
 
     #v(0.5em)
 
-    Fonctions et Calcul des Ambiants
-    (#link("https://github.com/ephel-lang/ephel")[Ephel])
+    === Fonctions et Calcul des Ambiants (#link("https://github.com/ephel-lang/ephel")[Ephel])
 
     #v(0.5em)
 
-    Libraries OCaml avec des amis
-    (#link("https://github.com/cargocut")[CargoCut])
+    === Libraries OCaml avec des amis (#link("https://github.com/cargocut")[CargoCut])
+]
+
+
+#default-slide[
+    #show link: underline
+    #set align(horizon)
+
+    #title[Colophon]
+
+    == Présentation élaborée avec l'aide de #link("https://typst.app")[Typst]
 ]
 
 #title-slide[

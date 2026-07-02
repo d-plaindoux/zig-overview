@@ -19,6 +19,24 @@
 ]
 
 #default-slide[
+    #title[Allocation sur la Pile]
+
+    #v(0.5em)
+    #reveal-code(lines: (0, 1, 4, 8))[```zig
+        const Point = struct { x: i32, y: i32 };
+
+        pub fn exemple() void {
+            const p1 = Point { .x = 0, .y = 0};
+            {
+              const p2 = Point { .x = 42, .y = 42};
+              ...
+            } // -> p2 fin de portée donc libéré
+            ...
+        } // -> p1 fin de portée donc libéré
+        ```]
+]
+
+#default-slide[
     #title[Pile ou Tas ?]
 
     #sub-title[Le Tas (Heap)]
@@ -30,25 +48,6 @@
     *Passage d'allocateur :* Allocator comme paramètre \
     *Contrainte :* Libération explicite (cf. fuite mémoire)
 ]
-
-#default-slide[
-    #title[Allocation sur la Pile]
-
-    #v(0.5em)
-    #reveal-code(lines: (0, 1, 4, 8))[```zig
-        const Point = struct { x: i32, y: i32 };
-
-        pub fn main() void {
-            const p1 = Point { .x = 0, .y = 0};
-            {
-              const p2 = Point { .x = 42, .y = 42};
-              ...
-            } // -> p2 fin de portée donc libéré
-            ...
-        }
-        ```]
-]
-
 
 #default-slide[
     #title[Allocation sur le Tas]
@@ -63,14 +62,33 @@
 ]
 
 #default-slide[
-    #title[Allocation]
+    #title[Allocation sur un tas]
 
     #v(0.5em)
-    #reveal-code(lines: (0, 1, 6, 8))[```zig
+    #reveal-code(lines: (0, 4))[```zig
+        pub fn main() !void {
+            var heap = std.heap.DebugAllocator(.{}){};
+
+            const allocator = heap.allocator();
+
+            const array = try allocator.alloc(u8, 10);
+            ...
+        }
+        ```]
+]
+
+
+#default-slide[
+    #title[Désallocation]
+
+    #sub-title[Garantir la libération en sortie de bloc]
+
+    #reveal-code(lines: (2,3,6,7))[```zig
         pub fn main() !void {
             var heap = std.heap.DebugAllocator(.{}){};
             defer _ = heap.deinit();
             const allocator = heap.allocator();
+
             const array = try allocator.alloc(u8, 10);
             defer allocator.free(array);
             ...
@@ -92,13 +110,14 @@
     }
     ```
 
-    #compiler-message[
+    #v(0.5em)
+    #uncover(2)[#compiler-message[
     ```
     error(DebugAllocator): memory address 0x10caa0000 leaked:
         const array = try allocator.alloc(u8, 10);
                                          ^
     ```
-    ]
+    ]]
 ]
 
 #default-slide[
@@ -122,7 +141,7 @@
 #default-slide[
     #title["Use-After-Free" ]
 
-    #uncover("2-")[=== Execution avec le `DebugAllocator` :
+    #uncover("2-")[#sub-title[Execution avec le `DebugAllocator` :]
     ```sh
     Segmentation fault at address 0x109a20000
     use-after-free.zig:13:5: 0x1010c10c1 in main
@@ -141,7 +160,6 @@
 
     #sub-title[Ecriture en dehors de la structure prévue]
 
-    #v(0.5em)
     ```zig
     fn foo(input: []const u8) void {
         var buffer: [8]u8 = undefined;
@@ -157,7 +175,7 @@
 #default-slide[
     #title["Stack Buffer Overflow"]
 
-    === Execution interrompue :
+    #sub-title[Execution interrompue]
     ```sh
     thread 1332888 panic: ... arguments have non-equal lengths
     stack-buffer-overflow.zig:5:19: 0x10230955f in foo
@@ -170,42 +188,4 @@
     === Détection des débordements (modes de compilation)
     Voir aussi Stack canaries, ASLR et DEP/NX.
 
-]
-
-#default-slide[
-    #title["Stack Buffer Overflow"]
-
-    #v(0.5em)
-    ```zig
-    fn foo(input: *const [8]u8) void {
-        var buffer: [8]u8 = undefined;
-        @memcpy(buffer[0..], input);
-    }
-
-    pub fn main() void {
-        foo("Plus de 8 caractères!"); // 22 caractères
-    }
-    ```
-
-    === expected type '*const [8]u8', found '*const [22:0]u8'
-]
-
-#default-slide[
-    #title["Double Free"]
-
-    #v(0.5em)
-    #reveal-code(lines: (0, 3, 6, 8))[```zig
-    var heap = std.heap.DebugAllocator(.{}){};
-    defer _ = heap.deinit();
-    const allocator = heap.allocator();
-
-    var number = try allocator.create(i32);
-    allocator.destroy(number);
-
-    allocator.destroy(number);
-    ```]
-
-    #uncover("6-")[=== Solution idiomatique :
-    - utilisation du `defer` ou typer avec un optionel.
-    ]
 ]

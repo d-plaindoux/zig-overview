@@ -34,8 +34,8 @@
     }
     ```
 
-    #sub-title[Declaration externe en C]
+    #uncover(2)[#sub-title[Declaration externe en C (classique)]
     ```c
     extern int min(int a, int b);
-    ```
+    ```]
 ]

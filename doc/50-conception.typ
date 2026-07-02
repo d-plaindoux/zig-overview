@@ -17,6 +17,7 @@
         fn init(x: i32, y: i32) @This() {
             return .{ .x = x, .y = y};
         }
+
         fn move(self: @This(), dx: i32, dy: i32) @This() {
             return .{ .x = self.x + dx, .y = self.y + dy};
         }
@@ -27,8 +28,8 @@
 #default-slide[
     #title[Programmation Orientée Donnée]
 
-    #sub-title[Function call or Static Dispatch?]
-
+    #v(0.5em)
+    #reveal-code(lines:(0,2,5,8))[
     ```zig
     fn main() void {
         const zero = Point.init(0, 0);
@@ -39,7 +40,7 @@
         // DOT syntax (syntactic sugar)
         const point2 = zero.move(42, 42);
     }
-    ```
+    ```]
 ]
 
 #default-slide[
@@ -64,9 +65,9 @@
 #default-slide[
     #title[Programmation par Abstraction]
 
-    #sub-title[Encodage à l'aide de table virtuelle]
+    #uncover("2-")[#sub-title[Encodage à l'aide de table virtuelle #uncover("3-")[ \~ DIY]]]
 
-    ```zig
+    #reveal-code(lines:(0,0,0,3,7,9))[```zig
     const Figure: type = struct {
         v_impl: *anyopaque,
         v_surface: *const fn (self: *anyopaque) f64,
@@ -77,15 +78,15 @@
 
         pub inline fn from(impl: anytype) @This() { ... }
     };
-    ```
+    ```]
 ]
 
 #default-slide[
     #title[Programmation par Abstraction]
 
-    #sub-title[Encodage à l'aide de table virtuelle]
+    #sub-title[Proposition d'une mise en œuvre]
 
-    ```zig
+    #reveal-code(lines:(0,9))[```zig
     const Cercle = struct {
         rayon: f64,
 
@@ -93,18 +94,18 @@
             return std.math.pi * self.rayon * self.rayon;
         }
     };
-    ```
+    ```]
 
-    === Instanciation : ```zig Figure.from(&Cercle{ .rayon = 10 })```
+    #uncover("3-")[=== Instanciation : ```zig Figure.from(&Cercle{ .rayon = 10 })```]
 
 ]
 
 #default-slide[
     #title[Programmation par Modules]
 
-    #sub-title[Definition de la signature de module ```zig Stack```]
+    #uncover("2-")[#sub-title[Definition de la signature de module ```zig Stack```]]
 
-    ```zig
+    #reveal-code(lines:(0,0))[```zig
     fn Stack(comptime T:fn (type) type, comptime A:type) type {
         return struct {
             create: fn () callconv(.@"inline") T(A),
@@ -113,15 +114,15 @@
             pop: fn (Allocator, T(A)) Pair(?A, T(A)),
         };
     }
-    ```
+    ```]
 ]
 
 #default-slide[
     #title[Programmation par Modules]
 
-    #sub-title[Mise en oeuvre avec les ```zig List```]
+    #uncover("2-")[#sub-title[Mise en oeuvre avec les ```zig List```]]
 
-    ```zig
+    #uncover("3-")[```zig
     fn StackList(comptime A: type) type {
         return struct {
             inline fn create() List(A) {
@@ -130,16 +131,16 @@
             ...
        };
     }
-    ```
+    ```]
 ]
 
 
 #default-slide[
     #title[Programmation par Modules]
 
-    #sub-title[Un peu de Duck Typing à la compilation]
+    #sub-title[DSL avec une pincée de métacompilation]
 
-    ```zig
+    #reveal-code(lines:(0,2,7))[```zig
     fn implUsing(comptime T: type, comptime I: type) S {
         var result: T = undefined;
 
@@ -150,7 +151,7 @@
 
         return result;
     }
-    ```
+    ```]
 ]
 
 #default-slide[
@@ -177,30 +178,27 @@
 
     #sub-title[Est-ce pertinent ?]
 
-    #v(0.5em)
+    #uncover("2-")[
     ```zig
-    ...
     const s = implUsing(Stack(List, u32), StackList(u32));
     // Expose le type interne ^^^^
-    ...
-    ```
+    ```]
 
-    === Abstraction via type existentiel limitée à comptime !
-
-    === Utiliser les vtable et les types opaques en runtime
+    #v(0.5em)
+    #uncover("3-")[=== Abstraction via type existentiel limitée à comptime !]
+    #uncover(4)[=== Utiliser les vtable et les types opaques en runtime]
 ]
 
 #default-slide[
     #title[Programmation Fonctionnelle]
 
-    #sub-title[Pas de fonction anonyme]
+    #uncover("2-")[#sub-title[Pas de fonction anonyme]]
 
-    #sub-title[Pas de fermeture (closure)]
+    #uncover("3-")[#sub-title[Pas de fermeture (closure)]]
 
-    #sub-title[Ordre supérieur]
-
+    #uncover("4-")[#sub-title[Ordre supérieur]
     === #h(1em) - Fonction qui manipule des fonctions
     === #h(1em) - Fonction qui retourne une fonction
-
+    ]
 ]
 

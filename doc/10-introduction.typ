@@ -23,6 +23,7 @@
     #uncover("3-")[=== Langage sans flux de contrôle caché]
     #uncover("4-")[=== Langage sans allocations mémoire cachées]
     #uncover("5-")[=== Langage sans préprocesseur, ni macros]
+    #uncover("6-")[=== Langage avec un outillage avancé]
 
 ]
 

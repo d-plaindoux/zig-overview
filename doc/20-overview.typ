@@ -11,7 +11,7 @@
 
     #uncover("2-")[== Nombres (entier et flottant)
 
-        i8, u8, i16, u16, i32, u32, i64, u64, isize, usize
+        i8, u8, i16, u16, i32, u32, i64, u64, i128, u128, isize, usize
 
         f16, f32, f64, f80, f128
     ]
@@ -26,258 +26,22 @@
 ]
 
 #default-slide[
-    #title[Fonction]
-
-    #v(0.5em)
-    ```zig
-    fn nom(p1: t1, ..., p1: tn) r {
-        ...
-    }
-    ```
-    #v(0.5em)
-
-    #sub-title[Les paramètres sont passés par valeur]
-    #uncover("2-")[=== #h(1em) les primitives sont copiées et ]
-    #uncover(3)[=== #h(1em) pour les données composites cela dépend]
-
-]
-
-#default-slide[
-    #title[Optionel ```zig ?T```]
-
-    #sub-title[Soit la valeur ```zig null``` soit une valeur de type ```zig T```]
-
-    #v(0.5cm)
-    ```zig
-    const a : ?u32 = ...;
-
-    const value1 = a orelse ...;
-    const value2 = a orelse unreacheable; // panique si [null]
-    const value3 = a.?; // équivalent à [a orelse unreacheable]
-    ```
-]
-
-#default-slide[
-    #title[Optionel ```zig ?T```]
-
-    #sub-title[Soit la valeur ```zig null``` soit une valeur de type ```zig T```: ```zig ?T```]
-
-    #v(0.5cm)
-    ```zig
-    const a : ?u32 = ...;
-
-    if (a != null) {
-       ... // L'appel à [a.?] est sécurisé
-    } else {
-       ...
-    }
-    ```
-]
-
-#default-slide[
-    #title[Optionel ```zig ?T```]
-
-    #sub-title[Soit la valeur ```zig null``` soit une valeur de type ```zig T```: ```zig ?T```]
-
-    #v(0.5cm)
-    ```zig
-    const a : ?u32 = ...;
-
-    if (a) |value| {
-       ...
-    } else {
-       ...
-    }
-    ```
-]
-#default-slide[
-    #title[Optionel ```zig ?T```]
-
-    #sub-title[Soit la valeur ```zig null``` soit une valeur de type ```zig T```: ```zig ?T```]
-
-    #v(0.5cm)
-    ```zig
-    var a : ?u32 = ...;
-
-    if (a) |*value| {
-       ...
-    } else {
-       ...
-    }
-    ```
-]
-
-#default-slide[
-    #title[Enumération]
-
-    #sub-title[Ensemble restreint de valeurs nommées]
-
-    #v(0.5cm)
-    ```zig
-    const Couleur = enum { rouge, noir };
-    const Enseigne = enum { pique, trefle, carreau, coeur };
-    ```
-]
-
-#default-slide[
-    #title[Enumération]
-
-    #sub-title[Traitement par filtrage exhaustif]
-
-    #v(0.5cm)
-    ```zig
-    const Couleur = enum { rouge, noir };
-    const Enseigne = enum { pique, trefle, carreau, coeur };
-
-    fn couleur(e: Enseigne) Couleur {
-        return switch (e) {
-            .pique, .trefle => .noir,
-            .carreau, .coeur => .rouge,
-        };
-    }
-    ```
-]
-
-#default-slide[
-    #title[Enumération]
-
-    #sub-title[Colocaliser représentation et comportements]
-
-    #v(0.5cm)
-    ```zig
-    const Couleur = enum { rouge, noir };
-    const Enseigne = enum {
-        pique, trefle, carreau, coeur,
-
-        fn couleur(e: Enseigne) Couleur {
-            ...
-        }
-    };
-    // Enseigne.couleur(.pique) ou Enseigne.pique.couleur()
-    ```
-]
-
-#default-slide[
-    #title[Enumération]
-
-    #sub-title[Typage et référence au type courant]
-
-    #v(0.5cm)
-    ```zig
-    const Couleur = enum { rouge, noir };
-    const Enseigne = enum {
-        pique, trefle, carreau, coeur,
-
-        fn couleur(e: @This()) Couleur {
-            ...
-        }
-    };
-    // Enseigne.couleur(.pique) ou Enseigne.pique.couleur()
-    ```
-
-]
-
-#default-slide[
-    #title[Erreur]
-
-    #sub-title[Enumérations spécifiques dédiées aux erreurs]
-
-    #v(0.5cm)
-    ```zig
-    const A = error{ NotDir, PathNotFound };
-    const B = error{ OutOfMemory, PathNotFound };
-    const C = A || B;
-    // C = error{ OutOfMemory, NotDir, PathNotFound }
-    ```
-
-    #sub-title[Pas de notion d'exceptions !]
-]
-
-#default-slide[
-    #title[Erreur]
-
-    #sub-title[Traitement des erreurs]
-
-    #v(0.5cm)
-    ```zig
-    const r = operation catch comportement_en_cas_d_erreur;
-
-    const r = operation catch |e| comportement_en_cas_d_erreur;
-
-    const r = operation catch |e| return e;
-
-    const r = try operation; // Sucre syntaxique
-    ```
-]
-
-#default-slide[
-    #title[Fonction]
-
-    #sub-title[Retourner des erreurs]
-
-    ```zig
-    fn nom(p1: t1, ..., p1: tn) !r { // inférence
-        ...
-    }
-    ```
-    ```zig
-    fn nom(p1: t1, ..., p1: tn) A!r {
-        ...
-    }
-    ```
-    ```zig
-    fn nom(p1: t1, ..., p1: tn) error{OutOfMemory}!r {
-        ...
-    }
-    ```
-]
-
-#default-slide[
-    #title[Fonction]
-
-    #sub-title[Retourner des erreurs]
-
-    ```zig
-    const MathError = error{DivideByZero};
-
-    fn divide(a: f64, b: f64) MathError!f64 {
-        if (b == 0) {
-            return MathError.DivideByZero;
-        }
-
-        return a / b;
-    }
-    ```
-]
-
-
-#default-slide[
-    #title[Erreur et diagnostique]
-
-    #sub-title[Type énuméré donc sans valeurs]
-
-    #sub-title[Approches possibles:]
-    === #h(1cm) - Remplacer ```zig E!R``` par un type algébrique comme ```zig Result```
-    === #h(1cm) - Avoir un paramètre en écriture pour le diagnostique
-]
-
-#default-slide[
     #title[Tableaux]
 
-    === Tableau statique
+    #uncover("2-")[=== Tableau statique
     ```zig
     const hello: [5]u8 = [_]u8{ 'h', 'e', 'l', 'l', 'o' };
-    ```
-    === Sous Tableau ou "Slice"
+    ```]
+    #uncover("3-")[=== "Slice" (pointeur  + taille)
     ```zig
     const he: []const u8 = hello[0..2];
-    ```
-    === Tableau dynamique avec ```zig std.ArrayList```
+    ```]
+    #uncover("4-")[=== Tableau dynamique avec ```zig std.ArrayList```]
 
-    === Vecteur (support SIMD)
+    #uncover("5-")[=== Vecteur (support SIMD)
     ```zig
-    const v1: @Vector(4, f32) = .{ 1.0, 2.0, 3.0, 4.0 };
-    ```
+    const v1: @Vector(4, i32) = .{ 1, 2, 3, 4 };
+    ```]
 
 ]
 
@@ -300,23 +64,177 @@
     while (i < 10) : (i += 1) { ... }
     ```]
 ]
+
 #default-slide[
-    #title[Tout est expression]
+    #title[Fonction]
 
     #v(0.5em)
+    ```zig
+    fn nom(p1: t1, ..., p1: tn) r {
+        ...
+    }
+    ```
+
+    #uncover("2-")[== Type des paramètres et résultat obligatoire]
+    #uncover("3-")[== Les paramètres sont passés par valeur]
+    #uncover("4-")[=== #h(1cm) - les valeurs primitives sont copiées et ]
+    #uncover(5)[=== #h(1cm) - pour les données composites cela dépend]
+]
+
+#default-slide[
+    #title[Optionel ```zig ?T```]
+
+    #sub-title[Soit la valeur ```zig null``` soit une valeur de type ```zig T```]
+
+    #reveal-code(lines:(0, 1, 3, 4, 5, 7))[```zig
+    const a : ?u32 = ...;
+
+    const value1 = a orelse ...;
+    const value2 = a orelse unreacheable; // panique si [null]
+    const value3 = a.?; // équivalent à [a orelse unreacheable]
+
+    if (a) |value| { ... } else { ...  }
+    ```]
+]
+
+#default-slide[
+    #title[Enumération]
+
+    #sub-title[Ensemble restreint de valeurs nommées]
 
     ```zig
-    _ = if (condition) 1 else 2;
-
-    _ = for (5..10) |i| i else @"return": {
-        break :@"return" 10;
-    };
-
-    var i = 0;
-    _ = while (i < 10) : (i += 1) {} else @"return": {
-        break :@"return" 10;
-    };
+    const Couleur = enum { rouge, noir };
+    const Enseigne = enum { pique, trefle, carreau, coeur };
     ```
+]
+
+#default-slide[
+    #title[Enumération]
+
+    #sub-title[Traitement par filtrage exhaustif]
+
+    ```zig
+    const Couleur = enum { rouge, noir };
+    const Enseigne = enum { pique, trefle, carreau, coeur };
+
+    fn couleur(e: Enseigne) Couleur {
+        return switch (e) {
+            .pique, .trefle => .noir,
+            .carreau, .coeur => .rouge,
+        };
+    }
+    ```
+]
+
+#default-slide[
+    #title[Enumération]
+
+    #sub-title[Colocaliser représentation et comportements]
+
+    ```zig
+    const Couleur = enum { rouge, noir };
+    const Enseigne = enum {
+        pique, trefle, carreau, coeur,
+
+        fn couleur(e: Enseigne) Couleur {
+            ...
+        }
+    };
+    // Enseigne.couleur(.pique) ou Enseigne.pique.couleur()
+    ```
+]
+
+#default-slide[
+    #title[Enumération]
+
+    #sub-title[Typage et référence au type courant]
+
+    ```zig
+    const Couleur = enum { rouge, noir };
+    const Enseigne = enum {
+        pique, trefle, carreau, coeur,
+
+        fn couleur(e: @This()) Couleur {
+            ...
+        }
+    };
+    // Enseigne.couleur(.pique) ou Enseigne.pique.couleur()
+    ```
+
+]
+
+#default-slide[
+    #title[Erreur]
+
+    #sub-title[Enumérations spécifiques dédiées aux erreurs]
+
+    #reveal-code(lines:(0,1,3))[```zig
+    const A = error{ NotDir, PathNotFound };
+
+    const B = error{ OutOfMemory, PathNotFound };
+
+    const C = A || B;
+    // C = error{ OutOfMemory, NotDir, PathNotFound }
+    ```]
+
+    #uncover(5)[== Pas de notion d'exceptions !]
+]
+
+#default-slide[
+    #title[Fonction & Erreurs]
+
+    #reveal-code(lines:(0,1,3))[```zig
+    fn nom(p1: t1, ..., p1: tn) A!r { ... }
+
+    fn nom(p1: t1, ..., p1: tn) error{OutOfMemory}!r { ... }
+
+    fn nom(p1: t1, ..., p1: tn) !r { ... }
+    ```]
+
+    #uncover(5)[=== La remontée d'erreur est faite via ```zig return ...```]
+]
+
+#default-slide[
+    #title[Traitement des erreurs]
+
+    #reveal-code(lines:(0,1,3,5,7))[```zig
+    const r1 = operation catch comportement_en_cas_d_erreur;
+
+    const r2 = operation catch |e| comportement_en_cas_d_erreur;
+
+    const r3 = operation catch |e| return e;
+
+    const r3 = try operation; // Sucre syntaxique pour r3
+    ```]
+]
+
+#default-slide[
+    #title[Fonction & Erreur]
+
+    #sub-title[Un exemple complet]
+
+    #reveal-code(lines:(0,1,6))[```zig
+    const MathError = error{DivideByZero};
+
+    fn divide(a: f64, b: f64) MathError!f64 {
+        if (b == 0) {
+            return MathError.DivideByZero;
+        }
+
+        return a / b;
+    }
+    ```]
+]
+
+
+#default-slide[
+    #title[Erreur et Diagnostique]
+
+    #sub-title[Type énuméré donc sans valeurs]
+
+    #uncover("2-")[#sub-title[Approches possibles:]]
+    #uncover("3-")[=== #h(1cm) - Remplacer ```zig E!R``` par un type algébrique comme ```zig Result```]
+    #uncover("4")[=== #h(1cm) - Avoir un paramètre en écriture pour le diagnostique]
 ]
 
 #default-slide[
@@ -428,53 +346,56 @@
     #sub-title[Type somme hérité du langage C]
 
     #v(0.5em)
+    #uncover("2-")[
     ```zig
     const Number = union {
         integer: i64,
         float: f64,
     };
-    ```
+    ```]
     #v(0.5em)
-
+    #uncover("3")[
     Soit un ```zig integer``` soit un ```zig float```
+    ]
 ]
 
 #default-slide[
     #title[Union]
 
-    #sub-title[Accès sécurisé à la compilation]
+    #sub-title[Manipulation sécurisée à la compilation]
 
     #v(0.5em)
+    #reveal-code(lines:(0,1,4,5))[
     ```zig
     const Number = union { integer: i64, float: f64, };
 
-    test "Qui ne compile pas :)" {
-        const n = NumberSimple{ .integer = 42 };
-        try std.testing.expectEqual(42, n.float);
+    fn main() void {
+        const n = Number{ .integer = 42 };
+        if (n.float == 0.0) {
+            ...
+        }
     }
-    ```
-    #v(0.5em)
+    ```]
 
-    #compiler-message[error: access of union field 'float' while field 'integer' is active]
+    #uncover(6)[#compiler-message[error: access of union field 'float' while field 'integer' is active]]
 
 ]
 
 #default-slide[
     #title[Union]
 
-    #sub-title[Accès sécurisé à l'exécution]
+    #sub-title[Manipulation sécurisée à l'exécution]
 
     #v(0.5em)
-    ```zig
+    #reveal-code(lines:(0,1,5))[```zig
     const Number = union { integer: i64, float: f64, };
 
     fn integer(n: Number) i64 {
         return n.integer;
     }
-    ```
+    ```]
     #v(1.5em)
-
-    #compiler-message[panic: access of union field 'integer' while field 'float' is active]
+    #uncover(4)[#compiler-message[panic: access of union field 'integer' while field 'float' is active]]
 ]
 
 
@@ -493,7 +414,7 @@
     #sub-title[Étiquetage implicite]
 
     #v(0.5em)
-    ```zig
+    #reveal-code(lines:(0,1,5,9))[```zig
     const Number = union(enum) { integer: i64, float: f64, };
 
     fn zeroInteger() Number {
@@ -503,7 +424,7 @@
     fn zeroFloat() Number {
        return .{ .float = 0 };
     }
-    ```
+    ```]
 ]
 
 #default-slide[
@@ -512,7 +433,7 @@
     #sub-title[Étiquetage explicite]
 
     #v(0.5em)
-    ```zig
+    #reveal-code(lines:(0,1,3,9))[```zig
     const Label = enum { entier, flottant };
 
     const Number = union(Label) { entier: i64, flottant: f64, };
@@ -521,7 +442,7 @@
         return if (label == .entier) .{ .entier = 0 }
                else .{ .flottant = 0 };
     }
-    ```
+    ```]
 ]
 
 #default-slide[
@@ -530,8 +451,9 @@
     #sub-title[Cas du Filtrage de Motif]
 
     #v(0.5em)
-    ```zig
-    const Number = union(enum) { entier: i64, flottant: f64, };
+    #reveal-code(lines:(1,4,5,6))[```zig
+    const Number = union(enum) {
+        entier: i64, flottant: f64, };
 
     fn increment(number: Number) Number {
         return switch (number) {
@@ -539,7 +461,7 @@
             .flottant => |f| .{ .flottant = f + 1 },
         };
     }
-    ```
+    ```]
 ]
 
 #default-slide[
@@ -550,8 +472,7 @@
     #v(0.5em)
     ```zig
     const Number = union(enum) {
-        entier: i64,
-        flottant: f64,
+        entier: i64, flottant: f64,
 
         fn increment(number: Number) Number {
             return ...
@@ -584,15 +505,15 @@
     #sub-title[Cas des types récursifs]
 
     #v(0.5em)
-    ```zig
+    #reveal-code(lines:(0,4))[```zig
     const Naturel = union(enum) {
         Zero,
         Succ: Naturel,
     };
-    ```
+    ```]
     #v(0.5em)
 
-    #compiler-message[
+    #uncover("3-")[#compiler-message[
         ```
         error: type 'Naturel' depends on itself for field declared here
             Succ: Naturel,
@@ -600,26 +521,27 @@
         ```
     ]
 
-    Il faut passer par les pointeurs.
+    #uncover(4)[Il faut passer par les pointeurs !]]
 ]
 
 #default-slide[
     #show link: underline
     #title[Pointeur]
 
-    *Définition de type :* ```zig *T``` ne peut jamais être nul
+    #v(0.5em)
+    #uncover("2-")[*Définition de type :* ```zig *T``` jamais nul sauf si ```zig T``` est optionnel]
 
-    *Syntaxe :* ```zig &``` pour l'adresse et ```zig .*``` pour déréférencer
+    #uncover("3-")[*Syntaxe :* ```zig &``` pour l'adresse et ```zig .*``` pour déréférencer]
 
-    *Implicite :* ```zig .*``` optionel lors d'accès (fonction ou champ)
+    #uncover("4-")[*Implicite :* ```zig .*``` optionel lors d'accès (fonction ou champ)]
 
-    *Arithmétique indirecte :* par coercion de type
+    #uncover("5-")[*Arithmétique indirecte :* par coercion de type]
 
-    ```zig
+    #uncover("6-")[```zig
     var x: i32 = 1234;
     const ptr = &x;
 
     ptr.* = 5678;  // Modification de la valeur
     ptr += 1;      // Erreur de compilation
-    ```
+    ```]
 ]

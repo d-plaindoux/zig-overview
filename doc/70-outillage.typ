@@ -8,27 +8,29 @@
 #default-slide[
     #title[Production de binaires]
 
-    == Une seule commande sans dépendance
+    #uncover("2-")[== Une seule commande sans dépendance]
 
-    == Remplacement de C/C++
+    #uncover("3-")[== Embarque les compilateurs C et C++]
 
-    == Traduction C vers Zig
+    #uncover("4-")[== Traduction C vers Zig gratuite]
 
-    == Cross-Compilation native (inclus WASM)
+    #uncover("5-")[== Cross-Compilation native (incluant WASM)]
 
-    == Linker Réécrit de zéro (pas de `ld` ou `lld`)
+    #uncover("6-")[== Réécriture du Linker (ni de `ld` ni de `lld`)]
+
+    #uncover("6-")[== Réécriture et enrobage de la Libc]
 
 ]
 
 #default-slide[
     #title[Le Système de Build]
 
-    == Tout en Zig via un fichier `build.zig`
+    #uncover("2-")[== Tout en Zig via un fichier `build.zig`]
 
-    == Gestionnaire de paquets via `build.zig.zon`
+    #uncover("3-")[== Gestionnaire de paquets via `build.zig.zon`]
 
-    == API riche
-
-    === #h(1cm) - Générer du code
-    === #h(1cm) - Exécuter des tests
+    #uncover("4-")[== API riche
+        === #h(1cm) - Générer du code
+        === #h(1cm) - Exécuter des tests
+    ]
 ]

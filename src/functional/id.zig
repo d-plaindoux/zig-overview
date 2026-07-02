@@ -44,3 +44,21 @@ test "Should Call id with a type" {
 test "Should Call id with a value" {
     try std.testing.expectEqual(1, id(1));
 }
+
+const std = @import("std");
+
+// Une fonction qui prend une autre fonction en paramètre via comptime
+fn appliquer(a: i32, b: i32, comptime operation: anytype) i32 {
+    return operation(a, b);
+}
+
+test "anonymous" {
+    const le_calcul = fn(x: i32) i32 { return x * 2; };
+
+    // On passe directement la fonction anonyme en argument
+    const produit = appliquer(4, 5, fn (x: i32, y: i32) i32 {
+        return x * y;
+        });
+
+    std.debug.print("Produit : {}\n", .{produit}); // Affiche 20
+}
